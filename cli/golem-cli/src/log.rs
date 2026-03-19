@@ -41,6 +41,7 @@ pub enum Output {
     None,
     TracingDebug,
     BufferedUntilErr,
+    Capture,
 }
 
 struct LogState {
@@ -176,6 +177,20 @@ pub fn set_log_output(output: Output) {
     LOG_STATE.write().unwrap().set_output(output);
 }
 
+pub fn start_capturing() {
+    let mut buffer = LOG_STATE_BUFFER.write().unwrap();
+    buffer.clear();
+    set_log_output(Output::Capture);
+}
+
+pub fn stop_capturing() -> Vec<String> {
+    set_log_output(Output::Stdout);
+    let mut buffer = LOG_STATE_BUFFER.write().unwrap();
+    let result = buffer.clone();
+    buffer.clear();
+    result
+}
+
 pub fn log_anyhow_error(error: &anyhow::Error) {
     if error.is::<NonSuccessfulExit>() || error.is::<PipedExitCode>() {
         // NOP
@@ -306,7 +321,7 @@ pub fn logln_internal(message: &str) {
             Output::TracingDebug => {
                 debug!("{}{}", state.calculated_indent, line);
             }
-            Output::BufferedUntilErr => {
+            Output::BufferedUntilErr | Output::Capture => {
                 let mut buffer = LOG_STATE_BUFFER.write().unwrap();
                 buffer.push(format!("{}{}", state.calculated_indent, line));
             }

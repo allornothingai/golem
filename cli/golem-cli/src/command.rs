@@ -792,6 +792,11 @@ pub enum GolemCliSubcommand {
         #[clap(subcommand)]
         subcommand: AgentSecretSubcommand,
     },
+    /// Start MCP server
+    Mcp {
+        #[clap(subcommand)]
+        subcommand: crate::command::mcp::McpSubcommand,
+    },
     /// Generate shell completion
     Completion {
         /// Selects shell
@@ -1671,6 +1676,8 @@ pub mod server {
         Clean,
     }
 }
+
+pub mod mcp;
 
 pub fn builtin_exec_subcommands() -> BTreeSet<String> {
     GolemCliCommand::command()
